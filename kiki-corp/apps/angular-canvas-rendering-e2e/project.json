@@ -1,0 +1,40 @@
+{
+  "name": "angular-canvas-rendering-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/angular-canvas-rendering-e2e/src",
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/angular-canvas-rendering-e2e/cypress.config.ts",
+        "devServerTarget": "angular-canvas-rendering:serve:development",
+        "testingType": "e2e",
+        "port": 4201
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "angular-canvas-rendering:serve:production"
+        },
+        "ci": {
+          "devServerTarget": "angular-canvas-rendering:serve-static"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "apps/angular-canvas-rendering-e2e/**/*.{js,ts}"
+        ]
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": [
+    "angular-canvas-rendering"
+  ]
+}
