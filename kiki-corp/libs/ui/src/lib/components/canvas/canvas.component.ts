@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, Input, NgZone, ViewChild, inject } from '@angular/core';
 import { Car } from '../../models/car';
+import { Road } from '../../models/road';
 
 @Component({
   selector: 'app-canvas',
@@ -19,7 +20,8 @@ export class CanvasComponent {
   @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
   private ctx: CanvasRenderingContext2D = {} as CanvasRenderingContext2D;
 
-  private car: Car = new Car(100, 100, 100, 50);
+  private car: Car = new Car(this.window.innerWidth / 2, this.window.innerHeight / 2, 50, 100);
+  private road: Road = new Road();
 
   private updates: number = 0;
 
@@ -41,10 +43,11 @@ export class CanvasComponent {
     const now = new Date().getTime();
     const dt = (now - previousTime) / 1000;
     this.updates++;
-    this.car.update(dt);
+    this.car.update(dt, this.road.getBorders());
     this.canvas.nativeElement.height = window.innerHeight;
     ctx.save();
     this.car.draw(ctx);
+    this.road.draw(ctx);
     ctx.restore();
     this.window.requestAnimationFrame(() => this.draw(ctx, now));
   }

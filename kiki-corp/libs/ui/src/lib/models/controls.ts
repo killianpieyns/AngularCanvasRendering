@@ -6,6 +6,7 @@ export class Controls {
 
     constructor() {
         this.addKeyListeners();
+        this.addClickListeners();
     }
 
     private addKeyListeners() {
@@ -44,5 +45,11 @@ export class Controls {
         });
     }
 
+    private addClickListeners() {
+        // click to move
+        document.addEventListener('click', (event) => {
+            console.log(event.clientX, event.clientY);
+        });
+    }
 
 }
