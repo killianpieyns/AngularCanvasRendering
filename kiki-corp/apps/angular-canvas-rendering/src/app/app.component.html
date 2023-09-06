@@ -1,2 +1,7 @@
-<app-canvas></app-canvas>
-<router-outlet></router-outlet>
+<app-canvas (carCrashed)="onCarCrash($event)" [car]="this.car" [crashReported]="this.crashReported"></app-canvas>
+<div id="overlay" *ngIf="showReset">
+    <div class="overlay-content">
+        <h1>Game Over</h1>
+        <button (click)="resetGame()">Reset</button>
+    </div>
+</div>

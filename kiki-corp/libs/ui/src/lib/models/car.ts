@@ -1,4 +1,4 @@
-import { inject } from "@angular/core";
+import * as Utils from "../utils";
 import { Controls } from "./controls";
 import { Sensors } from "./sensors";
 
@@ -16,6 +16,9 @@ export class Car {
     private friction: number = 5;
     private controls: Controls = new Controls();
     private sensor: Sensors = new Sensors(this);
+    private damaged: boolean = false;
+
+    private polygon: any = null;
 
     getX() {
         return this.x;
@@ -29,6 +32,10 @@ export class Car {
         return this.angle;
     }
 
+    isDamaged() {
+        return this.damaged;
+    }
+
 
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
@@ -38,10 +45,27 @@ export class Car {
     }
 
     public update(dt: number, borders: any) {
+        if (!this.damaged) {
+            this.move(dt);
+            this.polygon = this.createPolygon();
+            this.damaged = this.assessDamage(borders);
+        }
+        this.sensor.update(borders);
+    }
+
+    assessDamage(borders: any) {
+        for (let i = 0; i < borders.length; i++) {
+            if (Utils.polysIntersect(this.polygon, borders[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private move(dt: number) {
         this.updateSpeed(dt);
         this.updateAngle(dt);
         this.updatePosition(dt);
-        this.sensor.update(borders);
     }
 
     private updateSpeed(dt: number) {
@@ -91,13 +115,41 @@ export class Car {
         console.info(this.x, this.y);
     }
 
+    private createPolygon() {
+        const points = [];
+        const rad = Math.hypot(this.width, this.height) / 2;
+        const alpha = Math.atan2(this.width, this.height);
+        points.push({
+            x: this.x - Math.sin(this.angle - alpha) * rad,
+            y: this.y - Math.cos(this.angle - alpha) * rad
+        });
+        points.push({
+            x: this.x - Math.sin(this.angle + alpha) * rad,
+            y: this.y - Math.cos(this.angle + alpha) * rad
+        });
+        points.push({
+            x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
+            y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad
+        });
+        points.push({
+            x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
+            y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad
+        });
+        return points;
+    }
+
     public draw(ctx: CanvasRenderingContext2D) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(-this.angle);
-        ctx.fillStyle = 'red';
-        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-        ctx.restore();
+        if (this.damaged) {
+            ctx.fillStyle = "gray";
+        } else {
+            ctx.fillStyle = "black";
+        }
+        ctx.beginPath();
+        ctx.moveTo(this.polygon[0].x, this.polygon[0].y);
+        for (let i = 1; i < this.polygon.length; i++) {
+            ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
+        }
+        ctx.fill();
         this.sensor.draw(ctx);
     }
 

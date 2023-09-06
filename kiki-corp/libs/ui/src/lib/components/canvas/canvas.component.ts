@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input, NgZone, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { Car } from '../../models/car';
 import { Road } from '../../models/road';
 
@@ -15,12 +15,17 @@ import { Road } from '../../models/road';
 })
 export class CanvasComponent {
   private window = inject(Window);
-  @Input() width: number = 100;
-  @Input() height: number = 100;
-  @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
   private ctx: CanvasRenderingContext2D = {} as CanvasRenderingContext2D;
 
-  private car: Car = new Car(this.window.innerWidth / 2, this.window.innerHeight / 2, 50, 100);
+  @Input() width: number = 100;
+  @Input() height: number = 100;
+  @Output() carCrashed: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
+
+
+  @Input() car: Car = new Car(this.window.innerWidth / 2, this.window.innerHeight / 2, 50, 100);
+  @Input() crashReported: boolean = false;
   private road: Road = new Road();
 
   private updates: number = 0;
@@ -49,7 +54,16 @@ export class CanvasComponent {
     this.car.draw(ctx);
     this.road.draw(ctx);
     ctx.restore();
+
+    this.carCrashIf(this.car.isDamaged());
     this.window.requestAnimationFrame(() => this.draw(ctx, now));
+  }
+
+  private carCrashIf(crashed: boolean) {
+    if (!this.crashReported && crashed) {
+      this.carCrashed.emit(true);
+      this.crashReported = true;
+    }
   }
 
   @HostListener('window:resize')
@@ -58,5 +72,17 @@ export class CanvasComponent {
     this.width = Math.floor(window.innerWidth);
     this.canvas.nativeElement.height = this.height;
     this.canvas.nativeElement.width = this.width;
+    this.car.draw(this.ctx);
+    this.road.draw(this.ctx);
   }
+
+  ngOnChanges(change: SimpleChanges) {
+    if (change["car"]) {
+      this.car = change["car"].currentValue;
+    }
+    if (change["crashReported"]) {
+      this.crashReported = change["crashReported"].currentValue;
+    }
+  }
+
 }
