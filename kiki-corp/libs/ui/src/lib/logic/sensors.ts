@@ -1,11 +1,12 @@
-import * as Utils from "../utils";
+import { Rectangle } from "../interfaces/rectangle";
+import * as Utils from "../utils/geometry";
 import { Car } from "./car";
 
 export class Sensors {
     private car: Car;
-    private rayCount: number = 10;
+    private rayCount: number = 180;
     private rayLength: number = 500;
-    private raySpread: number = Math.PI / 2;
+    private raySpread: number = Math.PI / 4;
 
     private rays: any = null;
     private readings: any = null;
@@ -14,14 +15,15 @@ export class Sensors {
         this.car = car;
     }
 
-    public update(roadBorders: number[]) {
+    public update(roadBorders: number[], obstacles: any) {
         this.castRays();
         this.readings = [];
         for (let i = 0; i < this.rays.length; i++) {
             this.readings.push(
                 this.getReading(
                     this.rays[i],
-                    roadBorders
+                    roadBorders,
+                    obstacles
                 )
             );
         }
@@ -80,7 +82,7 @@ export class Sensors {
         }
     }
 
-    private getReading(ray: any, roadBorders: any) {
+    private getReading(ray: any, roadBorders: any, obstacleBorders: any) {
         let touches = [];
 
         for (let i = 0; i < roadBorders.length; i++) {
@@ -92,6 +94,22 @@ export class Sensors {
             );
             if (touch) {
                 touches.push(touch);
+            }
+        }
+
+        for (let i = 0; i < obstacleBorders.length; i++) {
+            const obstacleBorder = obstacleBorders[i];
+
+            for (let j = 0; j < obstacleBorder.length; j++) {
+                const touch = Utils.getIntersection(
+                    ray[0],
+                    ray[1],
+                    obstacleBorder[j][0],
+                    obstacleBorder[j][1]
+                );
+                if (touch) {
+                    touches.push(touch);
+                }
             }
         }
 

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Car } from 'libs/ui/src/lib/models/car';
+import { Car } from 'libs/ui/src/lib/logic/car';
 
 @Component({
   selector: 'app-root',

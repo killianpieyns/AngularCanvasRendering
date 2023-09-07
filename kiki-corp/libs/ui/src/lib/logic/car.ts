@@ -1,4 +1,5 @@
-import * as Utils from "../utils";
+import { Rectangle } from "../interfaces/rectangle";
+import * as Utils from "../utils/geometry";
 import { Controls } from "./controls";
 import { Sensors } from "./sensors";
 
@@ -44,13 +45,18 @@ export class Car {
         this.height = height;
     }
 
-    public update(dt: number, borders: any) {
+    public update(dt: number, borders: any, obstacleBorders: any) {
         if (!this.damaged) {
+            const damage = [];
             this.move(dt);
             this.polygon = this.createPolygon();
-            this.damaged = this.assessDamage(borders);
+            damage.push(this.assessDamage(borders));
+            for (let i = 0; i < obstacleBorders.length; i++) {
+                damage.push(this.assessDamage(obstacleBorders[i]));
+            }
+            this.damaged = damage.some((d: any) => d);
         }
-        this.sensor.update(borders);
+        this.sensor.update(borders, obstacleBorders);
     }
 
     assessDamage(borders: any) {

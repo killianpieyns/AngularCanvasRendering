@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
-import { Car } from '../../models/car';
-import { Road } from '../../models/road';
+import { Car } from '../../logic/car';
+import { Road } from '../../logic/road';
 
 @Component({
   selector: 'app-canvas',
@@ -48,11 +48,11 @@ export class CanvasComponent {
     const now = new Date().getTime();
     const dt = (now - previousTime) / 1000;
     this.updates++;
-    this.car.update(dt, this.road.getBorders());
+    this.car.update(dt, this.road.getBorders(), this.road.getObstacleBorders());
     this.canvas.nativeElement.height = window.innerHeight;
     ctx.save();
-    this.car.draw(ctx);
     this.road.draw(ctx);
+    this.car.draw(ctx);
     ctx.restore();
 
     this.carCrashIf(this.car.isDamaged());
@@ -72,8 +72,8 @@ export class CanvasComponent {
     this.width = Math.floor(window.innerWidth);
     this.canvas.nativeElement.height = this.height;
     this.canvas.nativeElement.width = this.width;
-    this.car.draw(this.ctx);
     this.road.draw(this.ctx);
+    this.car.draw(this.ctx);
   }
 
   ngOnChanges(change: SimpleChanges) {
