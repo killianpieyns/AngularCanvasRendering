@@ -1,6 +1,7 @@
 import { Rectangle } from "../interfaces/rectangle";
 import * as Utils from "../utils/geometry";
 import { Controls } from "./controls";
+import { HealthBar } from "./healthbar";
 import { Sensors } from "./sensors";
 
 export class Car {
@@ -18,6 +19,9 @@ export class Car {
     private controls: Controls = new Controls();
     private sensor: Sensors = new Sensors(this);
     private damaged: boolean = false;
+    private healthBar: HealthBar = new HealthBar(100);
+
+    private damageHit: number = 100;
 
     private polygon: any = null;
 
@@ -54,7 +58,10 @@ export class Car {
             for (let i = 0; i < obstacleBorders.length; i++) {
                 damage.push(this.assessDamage(obstacleBorders[i]));
             }
-            this.damaged = damage.some((d: any) => d);
+            if (damage.some((d: any) => d)) {
+                this.healthBar.addDammage(this.damageHit * dt);
+            }
+            this.damaged = this.healthBar.isDead();
         }
         this.sensor.update(borders, obstacleBorders);
     }
@@ -157,6 +164,7 @@ export class Car {
         }
         ctx.fill();
         this.sensor.draw(ctx);
+        this.healthBar.draw(ctx);
     }
 
 }
