@@ -1,4 +1,4 @@
-import { Rectangle } from "../interfaces/rectangle";
+import { Rectangle } from "../types/rectangle";
 import * as Utils from "../utils/geometry";
 import { Controls } from "./controls";
 import { HealthBar } from "./healthbar";
@@ -41,12 +41,17 @@ export class Car {
         return this.damaged;
     }
 
+    getPolygon() {
+        return this.polygon;
+    }
+
 
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
         this.y = y
         this.width = width;
         this.height = height;
+        this.polygon = this.createPolygon();
     }
 
     public update(dt: number, borders: any, obstacleBorders: any) {
@@ -125,7 +130,7 @@ export class Car {
     private updatePosition(dt: number) {
         this.x -= (this.speed * Math.sin(this.angle)) * dt;
         this.y -= (this.speed * Math.cos(this.angle)) * dt;
-        console.info(this.x, this.y);
+        // console.info(this.x, this.y);
     }
 
     private createPolygon() {

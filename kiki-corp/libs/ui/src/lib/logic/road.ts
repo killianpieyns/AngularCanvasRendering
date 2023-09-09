@@ -1,27 +1,30 @@
 import { inject } from "@angular/core";
-import { Rectangle } from "../interfaces/rectangle";
+import { Rectangle } from "../types/rectangle";
+import { Border } from "../types/border";
+import { Obstacles } from "./obstacles";
+import { Car } from "./car";
 
 export class Road {
     private window = inject(Window);
 
-    private marginLeft = 100;
-    private marginTop = 100;
-    private marginRight = 100;
-    private marginBottom = 100;
+    public marginLeft = 100;
+    public marginTop = 100;
+    public marginRight = 100;
+    public marginBottom = 100;
 
-    private topLeft = { x: 0 + this.marginLeft, y: 0 + this.marginTop };
-    private topRight = { x: this.window.innerWidth - this.marginRight, y: 0 + this.marginTop };
-    private bottomLeft = { x: 0 + this.marginLeft, y: this.window.innerHeight - this.marginBottom };
-    private bottomRight = { x: this.window.innerWidth - this.marginRight, y: this.window.innerHeight - this.marginBottom };
+    public topLeft = { x: 0 + this.marginLeft, y: 0 + this.marginTop };
+    public topRight = { x: this.window.innerWidth - this.marginRight, y: 0 + this.marginTop };
+    public bottomLeft = { x: 0 + this.marginLeft, y: this.window.innerHeight - this.marginBottom };
+    public bottomRight = { x: this.window.innerWidth - this.marginRight, y: this.window.innerHeight - this.marginBottom };
 
-    private borders = [
+    private borders : Border[] = [
         [this.topLeft, this.bottomLeft], // topleft to bottomleft
         [this.topRight, this.bottomRight], // topright to bottomright
         [this.topLeft, this.topRight], // topleft to topright
         [this.bottomLeft, this.bottomRight] // bottomleft to bottomright
     ];
 
-    private obstacles: any = [];
+    private obstacles: Obstacles = new Obstacles();
 
     constructor(x?: number, y?: number, width?: number, height?: number) {
         if (x && y && width && height) {
@@ -37,8 +40,6 @@ export class Road {
                 [this.bottomLeft, this.bottomRight]
             ];
         }
-
-        this.obstacles = this.createRandomObstaclesOnRoad(10);
     }
 
     public getBorders() {
@@ -46,47 +47,12 @@ export class Road {
     }
 
     public getObstacleBorders() {
-        return this.obstacles.map((obstacle: any) => obstacle.borders);
+        return this.obstacles.getBorders();
     }
 
-    private createRandomObstaclesOnRoad(numberOfObstacles: number = 10): any {
-        const obstacles = [];
-        const roadWidth = this.topRight.x - this.topLeft.x;
-        const roadHeight = this.bottomLeft.y - this.topLeft.y;
-        const minWidth = 5;
-        const minHeight = 5;
-        for (let i = 0; i < numberOfObstacles; i++) {
-            const x = Math.random() * roadWidth + this.marginLeft;
-            const y = Math.random() * roadHeight + this.marginTop; 3
-            const width = Math.min(Math.random() * 100 + minWidth, this.topRight.x - x);
-            const height = Math.min(Math.random() * 100 + minHeight, this.bottomLeft.y - y);
-            const borders = this.createObstacleBorders(x, y, width, height);
-            const rect: Rectangle = {
-                x: x,
-                y: y,
-                width: width,
-                height: height,
-                borders: borders
-            }
-            obstacles.push(rect);
-        }
-        return obstacles;
+    public createObstacles(numberOfObstacles: number = 10, car: Car, road: Road) {
+        this.obstacles.addObstacles(this.obstacles.createRandomObstaclesOnRoad(numberOfObstacles, road, car));
     }
-
-    private createObstacleBorders(x: number, y: number, width: number, height: number) {
-        const topLeft = { x: x, y: y };
-        const topRight = { x: x + width, y: y };
-        const bottomLeft = { x: x, y: y + height };
-        const bottomRight = { x: x + width, y: y + height };
-
-        return [
-            [topLeft, bottomLeft], // topleft to bottomleft
-            [topRight, bottomRight], // topright to bottomright
-            [topLeft, topRight], // topleft to topright
-            [bottomLeft, bottomRight] // bottomleft to bottomright
-        ];
-    }
-
 
     public draw(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
@@ -131,43 +97,7 @@ export class Road {
             this.bottomLeft.y - this.topLeft.y
         );
 
-        for (let i = 0; i < this.obstacles.length; i++) {
-            ctx.fillStyle = "gray";
-            const element = this.obstacles[i];
-            ctx.fillRect(
-                element.x,
-                element.y,
-                element.width,
-                element.height
-            );
-            ctx.fillStyle = "black";
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-
-            ctx.moveTo(
-                element.borders[0][0].x,
-                element.borders[0][0].y
-            );
-            ctx.lineTo(
-                element.borders[0][1].x,
-                element.borders[0][1].y
-            );
-            ctx.lineTo(
-                element.borders[1][1].x,
-                element.borders[1][1].y
-            );
-            ctx.lineTo(
-                element.borders[1][0].x,
-                element.borders[1][0].y
-            );
-            ctx.lineTo(
-                element.borders[0][0].x,
-                element.borders[0][0].y
-            );
-            ctx.stroke();
-
-        }
-
+        this.obstacles.draw(ctx);
     }
 
 

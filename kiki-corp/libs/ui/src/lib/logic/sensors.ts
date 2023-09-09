@@ -1,4 +1,4 @@
-import { Rectangle } from "../interfaces/rectangle";
+import { Rectangle } from "../types/rectangle";
 import * as Utils from "../utils/geometry";
 import { Car } from "./car";
 

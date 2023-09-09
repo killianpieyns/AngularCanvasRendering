@@ -37,11 +37,13 @@ export class CanvasComponent {
     this.canvas.nativeElement.width = this.canvas.nativeElement.offsetWidth;
     this.canvas.nativeElement.height = this.canvas.nativeElement.offsetHeight;
     this.ctx = this.canvas.nativeElement.getContext('2d')!;
+    this.road.createObstacles(10, this.car, this.road);
+    console.log(this.road);
     this.draw(this.ctx, new Date().getTime());
-    setInterval(() => {
-      console.log(this.updates);
-      this.updates = 0;
-    }, 1000);
+    // setInterval(() => {
+    //   console.log(this.updates);
+    //   this.updates = 0;
+    // }, 1000);
   }
 
   draw(ctx: CanvasRenderingContext2D = this.ctx, previousTime: number) {

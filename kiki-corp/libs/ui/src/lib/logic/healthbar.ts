@@ -1,56 +1,76 @@
 export class HealthBar {
-    private health: number = 100;
+    private currentHealth: number = 100;
+    private maxHealth: number = 100;
+
+    private x: number = 100;
+    private y: number = 50;
+    private width: number = 100;
+    private height: number = 10;
+    private marginTop: number = 100;
+    private marginRight: number = 10;
+    private marginBottom: number = 10;
+    private marginLeft: number = 100;
+
 
     constructor(health: number) {
-        this.health = health;
+        this.maxHealth = health;
+        this.currentHealth = health;
     }
 
     public update(health: number) {
-        this.health = health;
+        this.currentHealth = health;
     }
 
     public getHealth() {
-        return this.health;
+        return this.currentHealth;
     }
 
     public addDammage(dammage: number) {
-        this.health -= dammage;
+        this.currentHealth -= dammage;
     }
 
     public isDead() {
-        return this.health <= 0;
+        return this.currentHealth <= 0;
     }
 
     public reset() {
-        this.health = 100;
+        this.currentHealth = this.maxHealth;
     }
 
 
 
     public draw(ctx: CanvasRenderingContext2D) {
         // draw health bar on top of road
-        ctx.fillStyle = "green";
+        ctx.fillStyle = "black";
         ctx.fillRect(
-            0,
-            0,
-            this.health,
-            10
+            this.x - 1,
+            this.y - 1,
+            this.width + 3,
+            this.height + 3
         );
 
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "green";
         ctx.fillRect(
-            this.health,
-            0,
-            100 - this.health,
-            10
+            this.x,
+            this.y,
+            this.currentHealth,
+            this.height
+        );
+
+        ctx.fillStyle = "pink";
+        ctx.fillRect(
+            this.x + this.currentHealth,
+            this.y,
+            this.maxHealth - this.currentHealth,
+            this.height
         );
 
         ctx.fillStyle = "black";
         ctx.font = "20px Arial";
         ctx.fillText(
             "Health",
-            10,
-            20
+            this.x,
+            this.y + this.height + 20
         );
 
     }
