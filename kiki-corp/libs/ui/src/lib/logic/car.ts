@@ -1,8 +1,10 @@
 import { Border } from "../types/border";
+import { RayReading } from "../types/rayReading";
 import { Rectangle } from "../types/rectangle";
 import * as Utils from "../utils/geometry";
 import { Controls } from "./controls";
 import { HealthBar } from "./healthbar";
+import { NeuralNetwork } from "./network";
 import { Sensors } from "./sensors";
 
 export class Car {
@@ -11,20 +13,23 @@ export class Car {
     private width: number;
     private height: number;
     private speed: number = 0;
-    private acceleration: number = 1000;
-    private maxSpeed: number = 300;
+    private acceleration: number = 100;
+    private maxSpeed: number = 100;
     private maxReverseSpeed: number = -100;
     private angle: number = 0;
     private turnSpeed: number = 5;
     private friction: number = 5;
-    private controls: Controls = new Controls();
-    private sensor: Sensors = new Sensors(this);
     private damaged: boolean = false;
     private healthBar: HealthBar = new HealthBar(100);
     private score: number = 0;
 
+    private controls: Controls;
+    private sensor: Sensors | null = null;
+    private brain: NeuralNetwork | null = null;
+
     private damageHit: number = 100;
-    private rewardBordersHit: Border[]|null = null;
+    private rewardBordersHit: Border[] | null = null;
+    private useBrain: boolean = false;
 
     private polygon: any = null;
 
@@ -56,15 +61,19 @@ export class Car {
         return this.rewardBordersHit != null;
     }
 
-
-
-
-    constructor(x: number, y: number, width: number, height: number) {
+    constructor(x: number, y: number, width: number, height: number, controlType: "KEY" | "AI" = "AI") {
         this.x = x;
         this.y = y
         this.width = width;
         this.height = height;
         this.polygon = this.createPolygon();
+
+        if (controlType == "AI") {
+            this.sensor = new Sensors(this);
+            this.brain = new NeuralNetwork([this.sensor.rayCount, 20, 6, 4]);
+            this.useBrain = true;
+        }
+        this.controls = new Controls(controlType);
     }
 
     public update(dt: number, borders: Border[], obstacleBorders: Border[][], rewardBorders: Border[][]) {
@@ -74,7 +83,19 @@ export class Car {
             this.assessDamage(borders, obstacleBorders, dt);
             this.rewardBordersHit = this.assessReward(rewardBorders);
         }
-        this.sensor.update(borders, obstacleBorders);
+        if (this.sensor) {
+            this.sensor.update(borders, obstacleBorders);
+            const offsets = this.sensor.readings.map((s: RayReading) => s == null ? 0 : 1 - s.offset);
+            const outputs = NeuralNetwork.feedForward(offsets, this.brain!);
+            console.log(outputs);
+
+            if (this.useBrain) {
+                this.controls.forward = !!outputs[0];
+                this.controls.left = !!outputs[1];
+                this.controls.right = !!outputs[2];
+                this.controls.reverse = !!outputs[3];
+            }
+        }
     }
 
     assessDamage(roadBorders: Border[], obstacleBorders: Border[][], dt: number) {
@@ -114,7 +135,7 @@ export class Car {
         }
         return null;
     }
-        
+
 
     private move(dt: number) {
         this.updateSpeed(dt);
@@ -204,7 +225,11 @@ export class Car {
             ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
         }
         ctx.fill();
-        this.sensor.draw(ctx);
+
+        if (this.sensor) {
+            this.sensor.draw(ctx);
+        }
+
         this.healthBar.draw(ctx);
 
         ctx.fillStyle = "white";

@@ -5,7 +5,7 @@ import { Road } from "./road";
 import * as Utils from "../utils/geometry";
 
 export class Rewards {
- 
+
     private rewards: Rectangle[] = [];
 
     public setRewards(rewards: Rectangle[]) {
@@ -41,15 +41,15 @@ export class Rewards {
     }
 
     private createRandomReward(road: Road) {
-        const roadWidth = road.topRight.x - road.topLeft.x;
-        const roadHeight = road.bottomLeft.y - road.topLeft.y;
-        const x = Math.random() * roadWidth + road.marginLeft;
-        const y = Math.random() * roadHeight + road.marginTop;
+        const width = 20;
+        const height = 20;
+        const x = Math.random() * (road.width * 0.9) + road.marginLeft;
+        const y = Math.random() * (road.height * 0.9) + road.marginTop;
         const reward = {
             x: x,
             y: y,
-            width: 20,
-            height: 20,
+            width: width,
+            height: height,
             borders: this.createRewardBorders(x, y, 20, 20)
         };
         return reward;
@@ -88,7 +88,7 @@ export class Rewards {
         return Utils.polysIntersect(car.getPolygon(), Utils.bordersToPoints(rectangle.borders));
     }
 
-    
+
 
     public draw(ctx: CanvasRenderingContext2D) {
         for (let i = 0; i < this.rewards.length; i++) {
@@ -100,7 +100,7 @@ export class Rewards {
                 element.width,
                 element.height
             );
-            
+
             ctx.fillStyle = "white";
             ctx.font = "10px Arial";
             ctx.fillText("R" + i, element.x + 5, element.y + 15);

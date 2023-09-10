@@ -6,42 +6,58 @@ import { Car } from "./car";
 import { Rewards } from "./rewards";
 
 export class Road {
-    private window = inject(Window);
-
     public marginLeft = 100;
     public marginTop = 100;
     public marginRight = 100;
     public marginBottom = 100;
 
-    public topLeft = { x: 0 + this.marginLeft, y: 0 + this.marginTop };
-    public topRight = { x: this.window.innerWidth - this.marginRight, y: 0 + this.marginTop };
-    public bottomLeft = { x: 0 + this.marginLeft, y: this.window.innerHeight - this.marginBottom };
-    public bottomRight = { x: this.window.innerWidth - this.marginRight, y: this.window.innerHeight - this.marginBottom };
-
-    private borders : Border[] = [
-        [this.topLeft, this.bottomLeft], // topleft to bottomleft
-        [this.topRight, this.bottomRight], // topright to bottomright
-        [this.topLeft, this.topRight], // topleft to topright
-        [this.bottomLeft, this.bottomRight] // bottomleft to bottomright
-    ];
+    public x: number = 0;
+    public y: number = 0;
+    public width: number = 0;
+    public height: number = 0;
+    private borders: Border[] = [];
+    private windowWidth: number = 0;
+    private windowHeight: number = 0;
 
     private obstacles: Obstacles = new Obstacles();
     private rewards: Rewards = new Rewards();
 
-    constructor(x?: number, y?: number, width?: number, height?: number) {
-        if (x && y && width && height) {
-            this.topLeft = { x: x, y: y };
-            this.topRight = { x: x + width, y: y };
-            this.bottomLeft = { x: x, y: y + height };
-            this.bottomRight = { x: x + width, y: y + height };
+    constructor(x: number, y: number, width: number, height: number, windowWidth: number, windowHeight: number) {
+        this.x = x + this.marginLeft;
+        this.y = y + this.marginTop;
+        this.width = width - this.marginLeft - this.marginRight;
+        this.height = height - this.marginTop - this.marginBottom;
+        this.windowWidth = windowWidth;
+        this.windowHeight = windowHeight;
 
-            this.borders = [
-                [this.topLeft, this.bottomLeft],
-                [this.topRight, this.bottomRight],
-                [this.topLeft, this.topRight],
-                [this.bottomLeft, this.bottomRight]
-            ];
-        }
+        const topLeft = {
+            x: this.x,
+            y: this.y
+        };
+        const topRight = {
+            x: this.x + this.width,
+            y: this.y
+        };
+        const bottomLeft = {
+            x: this.x,
+            y: this.y + this.height
+        };
+        const bottomRight = {
+            x: this.x + this.width,
+            y: this.y + this.height
+        };
+
+        this.borders = [
+            [topLeft, bottomLeft],
+            [topRight, bottomRight],
+            [topLeft, topRight],
+            [bottomLeft, bottomRight]
+        ];
+    }
+
+    initRoad(car: Car) {
+        this.createObstacles(10, car, this);
+        this.createRewards(10, car, this);
     }
 
     public getBorders() {
@@ -101,16 +117,16 @@ export class Road {
         ctx.fillRect(
             0,
             0,
-            this.window.innerWidth,
-            this.window.innerHeight
+            this.windowWidth,
+            this.windowHeight
         );
 
         ctx.fillStyle = "white";
         ctx.fillRect(
-            this.topLeft.x,
-            this.topLeft.y,
-            this.topRight.x - this.topLeft.x,
-            this.bottomLeft.y - this.topLeft.y
+            this.x,
+            this.y,
+            this.width,
+            this.height
         );
 
         this.obstacles.draw(ctx);

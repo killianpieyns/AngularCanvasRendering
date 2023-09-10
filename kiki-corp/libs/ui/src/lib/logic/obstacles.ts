@@ -25,7 +25,7 @@ export class Obstacles {
 
     public createRandomObstaclesOnRoad(numberOfObstacles: number = 10, road: Road, car: Car): Rectangle[] {
         const obstacles: Rectangle[] = [];
-        
+
         for (let i = 0; i < numberOfObstacles; i++) {
             let rectangle: Rectangle = this.createObstacle(road);
             while (this.isOverlappingObstacles(rectangle, obstacles) || this.isOverlappingCar(rectangle, car)) {
@@ -42,19 +42,16 @@ export class Obstacles {
     private createObstacle(road: Road): any {
         const minWidth = 5;
         const minHeight = 5;
-        const roadWidth = road.topRight.x - road.topLeft.x;
-        const roadHeight = road.bottomLeft.y - road.topLeft.y;
-        const x = Math.random() * roadWidth + road.marginLeft;
-        const y = Math.random() * roadHeight + road.marginTop;
-        const width = Math.min(Math.random() * 100 + minWidth, road.topRight.x - x);
-        const height = Math.min(Math.random() * 100 + minHeight, road.bottomLeft.y - y);
-        const borders = this.createObstacleBorders(x, y, width, height);
+        const x = Math.random() * road.width + road.marginLeft;
+        const y = Math.random() * road.height + road.marginTop;
+        const width = Math.min(Math.random() * 100 + minWidth, (road.x + road.width) - x);
+        const height = Math.min(Math.random() * 100 + minHeight, (road.y + road.height) - y);
         const rectangle: Rectangle = {
             x: x,
             y: y,
             width: width,
             height: height,
-            borders: borders
+            borders: this.createObstacleBorders(x, y, width, height)
         };
 
         return rectangle;

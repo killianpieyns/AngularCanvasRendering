@@ -1,4 +1,6 @@
-<app-canvas (carCrashed)="onCarCrash($event)" [car]="this.car" [crashReported]="this.crashReported"></app-canvas>
+<button (click)="resetGame()" [ngStyle]="{height: '2vh', margin: 0}">Reset</button>
+<app-canvas (carCrashed)="onCarCrash($event)" [car]="this.car" [crashReported]="this.crashReported"
+    [road]="this.road"></app-canvas>
 <div id="overlay" *ngIf="showReset">
     <div class="overlay-content">
         <h1>Game Over</h1>

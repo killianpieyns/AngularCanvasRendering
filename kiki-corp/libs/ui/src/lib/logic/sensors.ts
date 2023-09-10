@@ -1,15 +1,16 @@
 import { Border } from "../types/border";
+import { RayReading } from "../types/rayReading";
 import * as Utils from "../utils/geometry";
 import { Car } from "./car";
 
 export class Sensors {
     private car: Car;
-    private rayCount: number = 180;
-    private rayLength: number = 500;
-    private raySpread: number = Math.PI / 4;
+    public rayCount: number = 90;
+    private rayLength: number = 200;
+    private raySpread: number = Math.PI * 2;
 
     private rays: any = null;
-    private readings: any = null;
+    public readings: RayReading[] = [];
 
     constructor(car: Car) {
         this.car = car;
@@ -116,7 +117,7 @@ export class Sensors {
         if (touches.length !== 0) {
             const offsets = touches.map(e => e.offset);
             const minOffset = Math.min(...offsets);
-            return touches.find(e => e.offset == minOffset);
+            return touches.find(e => e.offset == minOffset)!;
         }
         return null;
     }

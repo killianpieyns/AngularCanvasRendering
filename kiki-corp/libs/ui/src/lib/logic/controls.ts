@@ -4,9 +4,15 @@ export class Controls {
     public forward: boolean = false;
     public reverse: boolean = false;
 
-    constructor() {
-        this.addKeyListeners();
-        this.addClickListeners();
+    constructor(type: string) {
+        switch (type) {
+            case 'KEY':
+                this.addKeyListeners();
+                this.addClickListeners();
+                break;
+            case 'AI':
+                break;
+        }
     }
 
     private addKeyListeners() {
