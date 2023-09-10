@@ -1,4 +1,4 @@
-import { Rectangle } from "../types/rectangle";
+import { Border } from "../types/border";
 import * as Utils from "../utils/geometry";
 import { Car } from "./car";
 
@@ -15,7 +15,7 @@ export class Sensors {
         this.car = car;
     }
 
-    public update(roadBorders: number[], obstacles: any) {
+    public update(roadBorders: Border[], obstaclesBorders: Border[][]) {
         this.castRays();
         this.readings = [];
         for (let i = 0; i < this.rays.length; i++) {
@@ -23,7 +23,7 @@ export class Sensors {
                 this.getReading(
                     this.rays[i],
                     roadBorders,
-                    obstacles
+                    obstaclesBorders
                 )
             );
         }

@@ -1,3 +1,5 @@
+import { Border } from "../types/border";
+
 export function lerp(A: number, B: number, t: number) {
     return A + (B - A) * t;
 }
@@ -37,4 +39,13 @@ export function polysIntersect(poly1: any, poly2: any) {
         }
     }
     return false;
+}
+
+export function bordersToPoints(borders: Border[]) {
+    const points = [];
+    points.push(borders[0][0]);
+    points.push(borders[0][1]);
+    points.push(borders[1][1]);
+    points.push(borders[1][0]);
+    return points;
 }

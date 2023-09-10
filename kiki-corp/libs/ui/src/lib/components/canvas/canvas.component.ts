@@ -38,6 +38,7 @@ export class CanvasComponent {
     this.canvas.nativeElement.height = this.canvas.nativeElement.offsetHeight;
     this.ctx = this.canvas.nativeElement.getContext('2d')!;
     this.road.createObstacles(10, this.car, this.road);
+    this.road.createRewards(10, this.car, this.road);
     console.log(this.road);
     this.draw(this.ctx, new Date().getTime());
     // setInterval(() => {
@@ -50,14 +51,21 @@ export class CanvasComponent {
     const now = new Date().getTime();
     const dt = (now - previousTime) / 1000;
     this.updates++;
-    this.car.update(dt, this.road.getBorders(), this.road.getObstacleBorders());
+    this.car.update(dt, this.road.getBorders(), this.road.getObstacleBorders(), this.road.getRewardBorders());
     this.canvas.nativeElement.height = window.innerHeight;
+    
+    this.carCrashIf(this.car.isDamaged());
+    if (this.car.hitReward()) {
+      const rewardBordersHit = this.car.getRewardBordersHit();
+      this.road.removeReward(rewardBordersHit!);
+    }
+    
     ctx.save();
     this.road.draw(ctx);
     this.car.draw(ctx);
     ctx.restore();
 
-    this.carCrashIf(this.car.isDamaged());
+    
     this.window.requestAnimationFrame(() => this.draw(ctx, now));
   }
 
@@ -85,6 +93,7 @@ export class CanvasComponent {
     if (change["crashReported"]) {
       this.crashReported = change["crashReported"].currentValue;
     }
+
   }
 
 }

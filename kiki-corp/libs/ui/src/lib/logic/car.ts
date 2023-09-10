@@ -1,3 +1,4 @@
+import { Border } from "../types/border";
 import { Rectangle } from "../types/rectangle";
 import * as Utils from "../utils/geometry";
 import { Controls } from "./controls";
@@ -20,8 +21,10 @@ export class Car {
     private sensor: Sensors = new Sensors(this);
     private damaged: boolean = false;
     private healthBar: HealthBar = new HealthBar(100);
+    private score: number = 0;
 
     private damageHit: number = 100;
+    private rewardBordersHit: Border[]|null = null;
 
     private polygon: any = null;
 
@@ -45,6 +48,16 @@ export class Car {
         return this.polygon;
     }
 
+    getRewardBordersHit() {
+        return this.rewardBordersHit;
+    }
+
+    hitReward() {
+        return this.rewardBordersHit != null;
+    }
+
+
+
 
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
@@ -54,24 +67,27 @@ export class Car {
         this.polygon = this.createPolygon();
     }
 
-    public update(dt: number, borders: any, obstacleBorders: any) {
+    public update(dt: number, borders: Border[], obstacleBorders: Border[][], rewardBorders: Border[][]) {
         if (!this.damaged) {
-            const damage = [];
             this.move(dt);
             this.polygon = this.createPolygon();
-            damage.push(this.assessDamage(borders));
-            for (let i = 0; i < obstacleBorders.length; i++) {
-                damage.push(this.assessDamage(obstacleBorders[i]));
-            }
-            if (damage.some((d: any) => d)) {
-                this.healthBar.addDammage(this.damageHit * dt);
-            }
-            this.damaged = this.healthBar.isDead();
+            this.assessDamage(borders, obstacleBorders, dt);
+            this.rewardBordersHit = this.assessReward(rewardBorders);
         }
         this.sensor.update(borders, obstacleBorders);
     }
 
-    assessDamage(borders: any) {
+    assessDamage(roadBorders: Border[], obstacleBorders: Border[][], dt: number) {
+        const damage = [];
+        damage.push(this.borderCollision(roadBorders));
+        damage.push(this.assessDamageWithObstacles(obstacleBorders));
+        if (damage.some((d: any) => d)) {
+            this.healthBar.addDammage(this.damageHit * dt);
+        }
+        this.damaged = this.healthBar.isDead();
+    }
+
+    borderCollision(borders: Border[]) {
         for (let i = 0; i < borders.length; i++) {
             if (Utils.polysIntersect(this.polygon, borders[i])) {
                 return true;
@@ -79,6 +95,26 @@ export class Car {
         }
         return false;
     }
+
+    assessDamageWithObstacles(obstaclesBorders: Border[][]) {
+        const damage = [];
+        for (let i = 0; i < obstaclesBorders.length; i++) {
+            damage.push(this.borderCollision(obstaclesBorders[i]));
+        }
+        return damage.some((d: any) => d);
+    }
+
+    assessReward(rewardsBorders: Border[][]) {
+        for (let i = 0; i < rewardsBorders.length; i++) {
+            if (this.borderCollision(rewardsBorders[i])) {
+                this.score++;
+                // remove reward
+                return rewardsBorders[i];
+            }
+        }
+        return null;
+    }
+        
 
     private move(dt: number) {
         this.updateSpeed(dt);
@@ -170,6 +206,10 @@ export class Car {
         ctx.fill();
         this.sensor.draw(ctx);
         this.healthBar.draw(ctx);
+
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText("Score: " + this.score, 500, 50);
     }
 
 }

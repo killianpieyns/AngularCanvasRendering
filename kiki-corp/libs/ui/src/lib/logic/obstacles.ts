@@ -4,13 +4,17 @@ import { Road } from "./road";
 import * as Utils from "../utils/geometry";
 import { Car } from "./car";
 
-export class Obstacles{
+export class Obstacles {
     private obstacles: Rectangle[] = [];
+
+    public setObstacles(obstacles: Rectangle[]) {
+        this.obstacles = obstacles;
+    }
 
     public addObstacles(obstacles: Rectangle[]) {
         this.obstacles = this.obstacles.concat(obstacles);
     }
-    
+
     public getObstacles() {
         return this.obstacles;
     }
@@ -21,15 +25,12 @@ export class Obstacles{
 
     public createRandomObstaclesOnRoad(numberOfObstacles: number = 10, road: Road, car: Car): Rectangle[] {
         const obstacles: Rectangle[] = [];
-        const roadWidth = road.topRight.x - road.topLeft.x;
-        const roadHeight = road.bottomLeft.y - road.topLeft.y;
-        const minWidth = 5;
-        const minHeight = 5;
+        
         for (let i = 0; i < numberOfObstacles; i++) {
-            let rectangle: Rectangle = this.createObstacle(roadWidth, road, roadHeight, minWidth, minHeight);
+            let rectangle: Rectangle = this.createObstacle(road);
             while (this.isOverlappingObstacles(rectangle, obstacles) || this.isOverlappingCar(rectangle, car)) {
                 console.log("overlapping");
-                rectangle = this.createObstacle(roadWidth, road, roadHeight, minWidth, minHeight);
+                rectangle = this.createObstacle(road);
             }
 
             obstacles.push(rectangle);
@@ -38,7 +39,11 @@ export class Obstacles{
         return obstacles;
     }
 
-    private createObstacle(roadWidth: number, road: Road, roadHeight: number, minWidth: number, minHeight: number): any {
+    private createObstacle(road: Road): any {
+        const minWidth = 5;
+        const minHeight = 5;
+        const roadWidth = road.topRight.x - road.topLeft.x;
+        const roadHeight = road.bottomLeft.y - road.topLeft.y;
         const x = Math.random() * roadWidth + road.marginLeft;
         const y = Math.random() * roadHeight + road.marginTop;
         const width = Math.min(Math.random() * 100 + minWidth, road.topRight.x - x);
@@ -51,33 +56,18 @@ export class Obstacles{
             height: height,
             borders: borders
         };
-        
+
         return rectangle;
     }
 
     private isOverlappingObstacles(rectangle: Rectangle, obstacles: Rectangle[]) {
-        let overlappings = []
-        for (let i = 0; i < obstacles.length; i++) {
-            const overlapping = Utils.polysIntersect(this.bordersToPoints(rectangle.borders), this.bordersToPoints(obstacles[i].borders));
-            overlappings.push(overlapping);
-        }
-        console.log(overlappings);
-        return overlappings.some((overlapping: boolean) => overlapping);
+        return obstacles.some((obstacle: Rectangle) => {
+            return Utils.polysIntersect(Utils.bordersToPoints(rectangle.borders), Utils.bordersToPoints(obstacle.borders));
+        });
     }
 
     private isOverlappingCar(rectangle: Rectangle, car: Car) {
-        return Utils.polysIntersect(this.bordersToPoints(rectangle.borders), car.getPolygon());
-    }
-
-    private bordersToPoints(borders: Border[]): any[] {
-        const points: any[] = [];
-        for (let i = 0; i < borders.length; i++) {
-            points.push(borders[0][0]); // topleft
-            points.push(borders[0][1]); // bottomleft
-            points.push(borders[1][1]); // bottomright
-            points.push(borders[1][0]); // topright
-        }
-        return points;
+        return Utils.polysIntersect(Utils.bordersToPoints(rectangle.borders), car.getPolygon());
     }
 
     private createObstacleBorders(x: number, y: number, width: number, height: number): Border[] {
@@ -115,11 +105,11 @@ export class Obstacles{
             const lineWidth = 2;
             ctx.lineWidth = lineWidth;
 
-            const points = this.bordersToPoints(element.borders);
+            const points = Utils.bordersToPoints(element.borders);
             ctx.beginPath();
             ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i].x, points[i].y);
+            for (let i = 1; i < points.length + 1; i++) {
+                ctx.lineTo(points[i % points.length].x, points[i % points.length].y);
             }
             ctx.stroke();
 

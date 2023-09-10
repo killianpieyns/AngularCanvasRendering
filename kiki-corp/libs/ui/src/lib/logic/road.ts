@@ -3,6 +3,7 @@ import { Rectangle } from "../types/rectangle";
 import { Border } from "../types/border";
 import { Obstacles } from "./obstacles";
 import { Car } from "./car";
+import { Rewards } from "./rewards";
 
 export class Road {
     private window = inject(Window);
@@ -25,6 +26,7 @@ export class Road {
     ];
 
     private obstacles: Obstacles = new Obstacles();
+    private rewards: Rewards = new Rewards();
 
     constructor(x?: number, y?: number, width?: number, height?: number) {
         if (x && y && width && height) {
@@ -50,8 +52,22 @@ export class Road {
         return this.obstacles.getBorders();
     }
 
+    public getRewardBorders() {
+        return this.rewards.getBorders();
+    }
+
     public createObstacles(numberOfObstacles: number = 10, car: Car, road: Road) {
-        this.obstacles.addObstacles(this.obstacles.createRandomObstaclesOnRoad(numberOfObstacles, road, car));
+        this.obstacles.setObstacles(this.obstacles.createRandomObstaclesOnRoad(numberOfObstacles, road, car));
+    }
+
+    public createRewards(numberOfRewards: number = 10, car: Car, road: Road) {
+        this.rewards.setRewards(this.rewards.createRandomRewardsOnRoad(numberOfRewards, road, car, this.obstacles.getObstacles()));
+    }
+
+    public removeReward(rewardBorders: Border[]) {
+        console.log("rewardBorders", rewardBorders);
+        const reward = this.rewards.getRewardByBorders(rewardBorders)!;
+        this.rewards.removeReward(reward);
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -98,6 +114,7 @@ export class Road {
         );
 
         this.obstacles.draw(ctx);
+        this.rewards.draw(ctx);
     }
 
 
